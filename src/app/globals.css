@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #0b101c;
+  --bg-secondary: #111827;
+  --bg-card: #141b2d;
+  --border-subtle: #1e2d45;
+  --accent: #82cdf7;
+  --accent-dim: #4a9bc4;
+  --text-primary: #f0f4f8;
+  --text-muted: #7a9ab8;
+  --text-dim: #4a6480;
+}
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-mono: Consolas, "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+.home-space {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 35%, rgba(36, 62, 89, 0.22), transparent 58%);
+}
+
+.wireframe-page {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 35%, rgba(36, 62, 89, 0.16), transparent 62%);
+}
+
+.wireframe-content .rounded-xl.border {
+  background-color: rgba(20, 27, 45, 0.82) !important;
+}
+
+.home-sky-art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Technical label style */
+.tech-label {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-dim);
+}
+
+/* Blink animation */
+@keyframes blink-frame {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.blink-a { animation: blink-frame 1.4s step-end infinite; }
+.blink-b { animation: blink-frame 1.4s step-end infinite reverse; }
