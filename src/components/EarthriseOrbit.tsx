@@ -89,17 +89,32 @@ export default function EarthriseOrbit() {
                 fill="url(#earth-land)"
                 opacity="0.9"
               />
-              <path d="M63 303c112-66 201-35 286-61s184-20 291 20M88 380c94-46 173-21 264-35s175-7 263 35M147 160c69 65 82 126 72 190s13 128 69 187M421 46c-49 87-49 158-13 218s54 134 22 218" fill="none" stroke="#d8f4ff" strokeWidth="7" opacity="0.16" />
-              <path d="M58 271c100-49 192-31 281-54s186-14 286 13M82 419c118-39 211-12 304-27s155 1 226 32M112 210c61 49 91 101 88 157s9 118 53 168M459 71c-38 72-40 139-11 198s45 126 27 190" fill="none" stroke="#f2fbff" strokeWidth="3" opacity="0.2" />
+              <g fill="none" stroke="#d9f3ff" strokeLinecap="round">
+                <path d="M58 257c62-43 119-50 171-19 45 27 83 24 123-2 48-31 101-37 158-16 38 14 79 10 123-10" strokeWidth="13" opacity="0.11" />
+                <path d="M47 278c64-34 117-36 160-9 49 31 91 34 138 8 52-29 102-32 149-13 47 19 89 17 133-3" strokeWidth="6" opacity="0.18" />
+                <path d="M77 374c52-25 104-29 155-8 48 19 92 16 132-10 52-34 107-40 164-17 35 14 70 14 107 1" strokeWidth="11" opacity="0.1" />
+                <path d="M112 398c51-19 94-16 131 4 48 26 92 23 140-8 48-31 94-33 139-13 40 18 76 20 111 6" strokeWidth="5" opacity="0.17" />
+                <path d="M146 175c40 27 58 60 53 100-4 36 11 67 44 91" strokeWidth="8" opacity="0.12" />
+                <path d="M464 124c-30 33-40 66-28 98 12 31 11 60-3 88" strokeWidth="9" opacity="0.12" />
+              </g>
               <g fill="#ffd88a" opacity="0.84">
                 <circle cx="226" cy="275" r="3" /><circle cx="247" cy="282" r="2.4" /><circle cx="219" cy="293" r="2" />
+                <circle cx="236" cy="265" r="1.7" /><circle cx="258" cy="274" r="1.6" /><circle cx="251" cy="296" r="1.8" />
                 <circle cx="287" cy="349" r="2.5" /><circle cx="296" cy="359" r="2" /><circle cx="275" cy="366" r="2.2" />
+                <circle cx="281" cy="339" r="1.5" /><circle cx="305" cy="353" r="1.7" /><circle cx="285" cy="376" r="1.4" />
                 <circle cx="353" cy="259" r="2.4" /><circle cx="365" cy="266" r="2" /><circle cx="343" cy="273" r="1.8" />
+                <circle cx="381" cy="251" r="1.8" /><circle cx="392" cy="260" r="1.5" /><circle cx="370" cy="280" r="1.4" />
+                <circle cx="425" cy="285" r="2" /><circle cx="439" cy="293" r="1.5" /><circle cx="414" cy="300" r="1.4" />
+                <circle cx="328" cy="237" r="1.6" /><circle cx="335" cy="247" r="1.3" /><circle cx="349" cy="243" r="1.4" />
+              </g>
+              <g fill="#fff0bd" opacity="0.72">
+                <circle cx="229" cy="276" r="1.2" /><circle cx="289" cy="351" r="1.1" /><circle cx="355" cy="261" r="1.1" />
+                <circle cx="384" cy="253" r="1" /><circle cx="428" cy="286" r="1" /><circle cx="337" cy="239" r="0.9" />
               </g>
               <rect x="25" y="25" width="650" height="650" fill="url(#earth-night)" />
             </g>
             <circle cx="350" cy="350" r="320" fill="url(#earth-atmosphere)" />
-            <path d="M64 359a286 286 0 0 1 572 0" fill="none" stroke="url(#earth-horizon-light)" strokeWidth="5" />
+            <path d="M31 350a319 319 0 0 1 638 0" fill="none" stroke="url(#earth-horizon-light)" strokeWidth="3" opacity="0.55" />
           </svg>
         </div>
         <div className="earthrise-stars earthrise-stars-one" />

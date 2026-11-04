@@ -47,7 +47,6 @@ export default function HomePage() {
     <div className="flex-1 flex flex-col home-space">
       <AnimatedWireframe />
       <EarthriseOrbit />
-      <div className="earthrise-stage-spacer" aria-hidden="true" />
       {/* Hero */}
       <section className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-20 pb-16 flex-1">
         <div className="relative z-10 max-w-3xl mx-auto">
