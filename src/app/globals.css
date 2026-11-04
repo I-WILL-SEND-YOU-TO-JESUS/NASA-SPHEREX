@@ -60,6 +60,138 @@ body {
   pointer-events: none;
 }
 
+.earthrise-stage-spacer {
+  position: relative;
+  z-index: 2;
+  height: clamp(13rem, 28vw, 21rem);
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+.earthrise-stage {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 auto;
+  height: clamp(13rem, 28vw, 21rem);
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 94%, rgba(22, 92, 137, 0.23), transparent 57%),
+    linear-gradient(180deg, rgba(3, 8, 16, 0.05), rgba(3, 8, 16, 0.3));
+}
+
+.earthrise-globe {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(-22rem, -24vw, -11rem);
+  width: min(68vw, 42rem);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  animation: earthrise-appear 1.8s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+}
+
+.earthrise-globe svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.earthrise-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.9) 54%, transparent 100%);
+}
+
+.earthrise-stars-one {
+  opacity: 0.57;
+  background-image:
+    radial-gradient(1px 1px at 9% 26%, #fff 98%, transparent),
+    radial-gradient(1.5px 1.5px at 21% 61%, #bfe9ff 98%, transparent),
+    radial-gradient(1px 1px at 39% 24%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 71% 33%, #d9f2ff 98%, transparent),
+    radial-gradient(1.5px 1.5px at 88% 59%, #fff 98%, transparent);
+  background-size: 330px 190px;
+}
+
+.earthrise-stars-two {
+  opacity: 0.35;
+  background-image:
+    radial-gradient(1px 1px at 15% 72%, #b8e9ff 98%, transparent),
+    radial-gradient(1px 1px at 48% 46%, #fff 98%, transparent),
+    radial-gradient(1.4px 1.4px at 81% 19%, #fff 98%, transparent);
+  background-size: 470px 220px;
+}
+
+.earthrise-horizon {
+  position: absolute;
+  left: 50%;
+  bottom: 1.4rem;
+  width: min(74vw, 48rem);
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(102, 201, 255, 0.68), rgba(206, 244, 255, 0.9), rgba(102, 201, 255, 0.68), transparent);
+  box-shadow: 0 0 18px 3px rgba(91, 191, 255, 0.3);
+  opacity: 0.7;
+}
+
+.home-satellite {
+  position: fixed;
+  z-index: 30;
+  top: clamp(4.5rem, 12vh, 7rem);
+  right: clamp(0.35rem, 3vw, 2.75rem);
+  width: clamp(5rem, 10vw, 9rem);
+  transform: translate3d(0, var(--satellite-travel, 0px), 0);
+  pointer-events: none;
+  opacity: 0.84;
+  filter: drop-shadow(0 0 12px rgba(108, 202, 255, 0.2));
+  transition: opacity 250ms ease;
+}
+
+.home-satellite svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.satellite-drift {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: satellite-drift 5s ease-in-out infinite;
+}
+
+@keyframes earthrise-appear {
+  from { opacity: 0.25; transform: translate(-50%, 2.5rem) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@keyframes satellite-drift {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50% { transform: rotate(2deg) translateY(5px); }
+}
+
+@media (max-width: 640px) {
+  .earthrise-globe {
+    width: min(88vw, 26rem);
+    bottom: -12.5rem;
+  }
+
+  .home-satellite {
+    right: 0.15rem;
+    width: 4.5rem;
+    opacity: 0.68;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .earthrise-globe,
+  .satellite-drift {
+    animation: none;
+  }
+}
+
 /* Technical label style */
 .tech-label {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;

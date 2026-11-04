@@ -74,6 +74,9 @@ export async function GET(request: NextRequest): Promise<Response> {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     const isTimeout = message.toLowerCase().includes("abort") || message.toLowerCase().includes("timeout");
+    const statusMatch = message.match(/responded\s+(\d{3})/i);
+    const upstreamStatus = statusMatch ? Number(statusMatch[1]) : null;
+    const isUnavailable = upstreamStatus === 503;
 
     console.error("[api/spherex/search] upstream error:", message);
 
@@ -82,10 +85,12 @@ export async function GET(request: NextRequest): Promise<Response> {
         success: false,
         error: isTimeout
           ? "IRSA did not respond in time. Please retry."
+          : isUnavailable
+            ? "NASA/IPAC IRSA is temporarily unavailable (503). This search did not finish; try again shortly. It does not mean there are no observations at this position."
           : `Could not reach IRSA: ${message}`,
         code: isTimeout ? "TIMEOUT" : "UPSTREAM_ERROR",
       } satisfies ApiSearchResponse,
-      { status: 502 }
+      { status: isTimeout ? 504 : isUnavailable ? 503 : 502 }
     );
   }
 }

@@ -355,11 +355,19 @@ async function fetchSia(
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(abort, SEARCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, {
+    const request = () => fetch(url, {
       signal: controller.signal,
       headers: { Accept: "application/json" },
       // No caching header — Next.js server-side fetch; we use our own in-memory cache
     });
+    let res = await request();
+    if (!res.ok && (res.status === 429 || res.status >= 500)) {
+      // IRSA occasionally returns a transient gateway/service error. Retry once
+      // after a short pause; avoid multiplying load during a longer outage.
+      await res.body?.cancel();
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      res = await request();
+    }
     if (!res.ok) {
       throw new Error(`IRSA SIA responded ${res.status}: ${res.statusText}`);
     }
