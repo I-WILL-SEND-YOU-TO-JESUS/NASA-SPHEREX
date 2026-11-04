@@ -1,47 +1,4 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-
 export default function EarthriseOrbit() {
-  const satelliteRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const satellite = satelliteRef.current;
-    if (!satellite) return;
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let frame = 0;
-
-    const updatePosition = () => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        if (reducedMotion.matches) {
-          satellite.style.setProperty("--satellite-travel", "0px");
-          return;
-        }
-
-        const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0;
-        satellite.style.setProperty(
-          "--satellite-travel",
-          `${Math.round(progress * window.innerHeight * 0.48)}px`
-        );
-      });
-    };
-
-    updatePosition();
-    window.addEventListener("scroll", updatePosition, { passive: true });
-    window.addEventListener("resize", updatePosition);
-    reducedMotion.addEventListener("change", updatePosition);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", updatePosition);
-      window.removeEventListener("resize", updatePosition);
-      reducedMotion.removeEventListener("change", updatePosition);
-    };
-  }, []);
-
   return (
     <>
       <div className="earthrise-stage" aria-hidden="true">
@@ -122,44 +79,6 @@ export default function EarthriseOrbit() {
         <div className="earthrise-horizon" />
       </div>
 
-      <div ref={satelliteRef} className="home-satellite" aria-hidden="true">
-        <svg viewBox="0 0 240 390" role="presentation">
-          <defs>
-            <linearGradient id="scan-beam" x1="0" y1="0" x2="0.28" y2="1">
-              <stop offset="0" stopColor="#b8edff" stopOpacity="0.28" />
-              <stop offset="0.42" stopColor="#80cfff" stopOpacity="0.1" />
-              <stop offset="1" stopColor="#77caff" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="solar-panel" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#306e9d" />
-              <stop offset="1" stopColor="#102b4b" />
-            </linearGradient>
-            <linearGradient id="satellite-body" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#f0f5ec" />
-              <stop offset="0.5" stopColor="#9da9aa" />
-              <stop offset="1" stopColor="#4d6372" />
-            </linearGradient>
-            <filter id="beam-soften"><feGaussianBlur stdDeviation="7" /></filter>
-          </defs>
-          <path d="M119 93 19 380h210L121 93Z" fill="url(#scan-beam)" />
-          <path d="M120 96 42 350M122 96l69 254" fill="none" stroke="#a9e6ff" strokeWidth="1.5" opacity="0.23" filter="url(#beam-soften)" />
-          <ellipse cx="135" cy="321" rx="44" ry="9" fill="#8edaff" opacity="0.13" filter="url(#beam-soften)" />
-          <g className="satellite-drift" strokeLinejoin="round">
-            <path d="M69 56h-51v46h51m102-46h51v46h-51" fill="url(#solar-panel)" stroke="#78b8e3" strokeWidth="2" />
-            <path d="M31 57v44m18-44v44m18-44v44m111-44v44m18-44v44m18-44v44" stroke="#9dd5f6" strokeWidth="1" opacity="0.62" />
-            <path d="M18 70h51m102 0h51M18 85h51m102 0h51" stroke="#75b7e2" strokeWidth="1" opacity="0.6" />
-            <path d="m103 44 17-19 17 19v60h-34Z" fill="url(#satellite-body)" stroke="#dbe9e9" strokeWidth="2" />
-            <path d="m99 52 21-8 21 8v33h-42Z" fill="#243a4e" stroke="#9cb7c5" strokeWidth="2" />
-            <circle cx="120" cy="69" r="10" fill="#071523" stroke="#a4ecff" strokeWidth="3" />
-            <circle cx="120" cy="69" r="4" fill="#b9f2ff" />
-            <path d="M108 104h24l8 14-20 13-20-13Z" fill="url(#satellite-body)" stroke="#dce7e2" strokeWidth="2" />
-            <path d="M120 131v10m-12-2h24" fill="none" stroke="#d9e7e6" strokeWidth="2" />
-            <path d="M107 42 91 31m42 11 17-12" stroke="#d5e4e4" strokeWidth="2" />
-            <circle cx="91" cy="31" r="3" fill="#a8e5ff" />
-            <circle cx="150" cy="29" r="3" fill="#a8e5ff" />
-          </g>
-        </svg>
-      </div>
     </>
   );
 }

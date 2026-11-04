@@ -3,8 +3,6 @@
 import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import SkyViewer from "@/components/SkyViewer";
-import ComparisonViewer from "@/components/ComparisonViewer";
-import CandidatePanel from "@/components/CandidatePanel";
 import SkyRoam from "@/components/SkyRoam";
 import AnimatedWireframe from "@/components/AnimatedWireframe";
 import { FEATURED_TARGETS } from "@/lib/featured-targets";
@@ -44,8 +42,6 @@ function ExploreContent() {
   // Selection state
   const [selectedObsA, setSelectedObsA] = useState<ObservationRecord | null>(null);
   const [imageA, setImageA] = useState<FitsImageData | null>(null);
-  const [selectedObsB, setSelectedObsB] = useState<ObservationRecord | null>(null);
-  const [imageB, setImageB] = useState<FitsImageData | null>(null);
 
   const [loadingCutouts, setLoadingCutouts] = useState<Set<string>>(new Set());
   const [cutoutError, setCutoutError] = useState<string | null>(null);
@@ -59,9 +55,6 @@ function ExploreContent() {
   const objectOptions = shortNameQuery
     ? FEATURED_TARGETS.slice(0, 3).map((target) => ({ name: target.name }))
     : nameSuggestions.objects;
-
-  // View tabs in main viewer: "single" or "compare"
-  const [activeTab, setActiveTab] = useState<"single" | "compare">("single");
 
   useEffect(() => {
     const closeWhenClickingOutside = (event: PointerEvent) => {
@@ -129,12 +122,11 @@ function ExploreContent() {
   const fetchCutout = useCallback(
     async (
       obs: ObservationRecord,
-      targetSlot: "A" | "B",
       customRa?: number,
       customDec?: number,
       customSize?: number
     ) => {
-      setLoadingCutouts((current) => new Set(current).add(`${targetSlot}:${obs.id}`));
+      setLoadingCutouts((current) => new Set(current).add(obs.id));
       setCutoutError(null);
 
       const cRa = customRa ?? parseFloat(ra);
@@ -160,20 +152,15 @@ function ExploreContent() {
             ...data.imageData,
             pixels,
           };
-          if (targetSlot === "A") {
-            setSelectedObsA(obs);
-            setImageA(fitsData);
-          } else {
-            setSelectedObsB(obs);
-            setImageB(fitsData);
-          }
+          setSelectedObsA(obs);
+          setImageA(fitsData);
         }
       } catch {
         setCutoutError("Failed to download or decode FITS cutout from server.");
       } finally {
         setLoadingCutouts((current) => {
           const next = new Set(current);
-          next.delete(`${targetSlot}:${obs.id}`);
+          next.delete(obs.id);
           return next;
         });
       }
@@ -208,8 +195,6 @@ function ExploreContent() {
       setRecords([]);
       setSelectedObsA(null);
       setImageA(null);
-      setSelectedObsB(null);
-      setImageB(null);
 
       try {
         const q = new URLSearchParams({
@@ -228,10 +213,8 @@ function ExploreContent() {
           const sr = data as SearchResponse;
           setSearchStatus("done");
           setRecords(sr.records);
-          // The single-image view needs only its first cutout. Slot B is loaded
-          // when the user opens comparison, avoiding an unnecessary FITS download.
           if (sr.records.length > 0) {
-            fetchCutout(sr.records[0], "A", parseFloat(searchRa), parseFloat(searchDec), parseFloat(searchSize));
+            fetchCutout(sr.records[0], parseFloat(searchRa), parseFloat(searchDec), parseFloat(searchSize));
           }
         }
       } catch {
@@ -241,14 +224,6 @@ function ExploreContent() {
     },
     [fetchCutout]
   );
-
-  function openComparison() {
-    setActiveTab("compare");
-    const secondObservation = records[1];
-    if (secondObservation && !imageB && !loadingCutouts.has(`B:${secondObservation.id}`)) {
-      void fetchCutout(secondObservation, "B");
-    }
-  }
 
   async function searchByName(name: string) {
     const trimmed = name.trim();
@@ -327,29 +302,9 @@ function ExploreContent() {
       description: "Synthetic test cutout mimicking Orion candidate epoch 1",
     };
 
-    const demoObsB: ObservationRecord = {
-      id: "demo-2",
-      collection: "spherex_qr2_demo",
-      obsId: "DEMO_EPOCH_2",
-      dateObs: "2024-09-18T12:00:00Z",
-      mjd: 60571.5,
-      emMin: 0.75e-6,
-      emMax: 1.1e-6,
-      bandpassName: "Band 1 (0.75-1.1 μm)",
-      fov: 0.05,
-      ra: parseFloat(ra) || 83.8221,
-      dec: parseFloat(dec) || -5.3911,
-      instrument: "SPHEREx Imager",
-      facility: "SPHEREx",
-      calibLevel: 2,
-      description: "Synthetic test cutout mimicking Orion candidate epoch 2",
-    };
-
-    setRecords([demoObsA, demoObsB]);
+    setRecords([demoObsA]);
     setSelectedObsA(demoObsA);
     setImageA(generateDemoImage(256, 256));
-    setSelectedObsB(demoObsB);
-    setImageB(generateDemoImage(256, 256));
     setSearchStatus("done");
     setSearchError("Showing synthetic demo imagery only. It is not real SPHEREx data.");
   }
@@ -380,29 +335,6 @@ function ExploreContent() {
           </h1>
         </div>
 
-        {/* Mode tab switch */}
-        <div className="flex bg-[var(--bg-card)] p-1 rounded-xl border border-[var(--border-subtle)]">
-          <button
-            onClick={() => setActiveTab("single")}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === "single"
-                ? "bg-[var(--accent)] text-[var(--bg-primary)] shadow-sm"
-                : "text-[var(--text-muted)] hover:text-white"
-            }`}
-          >
-            Single Viewer
-          </button>
-          <button
-            onClick={openComparison}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === "compare"
-                ? "bg-[var(--accent)] text-[var(--bg-primary)] shadow-sm"
-                : "text-[var(--text-muted)] hover:text-white"
-            }`}
-          >
-            Comparison Suite
-          </button>
-        </div>
       </div>
 
       <SkyRoam
@@ -679,9 +611,7 @@ function ExploreContent() {
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                 {records.map((r) => {
                   const isA = selectedObsA?.id === r.id;
-                  const isB = selectedObsB?.id === r.id;
-                  const isLoadingA = loadingCutouts.has(`A:${r.id}`);
-                  const isLoadingB = loadingCutouts.has(`B:${r.id}`);
+                  const isLoading = loadingCutouts.has(r.id);
 
                   return (
                     <div
@@ -689,8 +619,6 @@ function ExploreContent() {
                       className={`p-2.5 rounded-lg border text-xs transition-all ${
                         isA
                           ? "border-[var(--accent)] bg-[rgba(130,205,247,0.08)]"
-                          : isB
-                          ? "border-emerald-500 bg-[rgba(16,185,129,0.08)]"
                           : "border-[var(--border-subtle)] bg-[var(--bg-primary)] hover:border-[var(--text-dim)]"
                       }`}
                     >
@@ -698,38 +626,22 @@ function ExploreContent() {
                         <span className="font-semibold text-white">
                           {r.dateObs ? r.dateObs.slice(0, 10) : "Observation"}
                         </span>
-                        <div className="flex items-center gap-1">
-                          {isA && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-[var(--accent)] text-[var(--bg-primary)] font-bold">
-                              Slot A
-                            </span>
-                          )}
-                          {isB && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-400 text-[var(--bg-primary)] font-bold">
-                              Slot B
-                            </span>
-                          )}
-                        </div>
+                        {isA && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] bg-[var(--accent)] text-[var(--bg-primary)] font-bold">
+                            Loaded
+                          </span>
+                        )}
                       </div>
                       <p className="text-[var(--text-muted)] truncate mb-2">
                         {r.collection} · {r.bandpassName || "Standard Band"}
                       </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => fetchCutout(r, "A")}
-                          disabled={isLoadingA}
-                          className="flex-1 py-1 rounded border border-[var(--border-subtle)] text-[10px] uppercase font-mono hover:bg-[var(--border-subtle)] text-white"
-                        >
-                          {isLoadingA ? "Loading…" : "Load into A"}
-                        </button>
-                        <button
-                          onClick={() => fetchCutout(r, "B")}
-                          disabled={isLoadingB}
-                          className="flex-1 py-1 rounded border border-[var(--border-subtle)] text-[10px] uppercase font-mono hover:bg-[var(--border-subtle)] text-white"
-                        >
-                          {isLoadingB ? "Loading…" : "Load into B"}
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => fetchCutout(r)}
+                        disabled={isLoading}
+                        className="w-full py-1 rounded border border-[var(--border-subtle)] text-[10px] uppercase font-mono hover:bg-[var(--border-subtle)] text-white"
+                      >
+                        {isLoading ? "Loading…" : "View observation"}
+                      </button>
                     </div>
                   );
                 })}
@@ -740,112 +652,75 @@ function ExploreContent() {
 
         {/* Right Viewer & Analysis Column */}
         <div className="flex-1 w-full space-y-6 min-w-0">
-          {activeTab === "single" ? (
-            <div className="space-y-4">
-              <div
-                className="p-4 rounded-xl border flex flex-col"
-                style={{ background: "var(--bg-card)", borderColor: "var(--border-subtle)" }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-white">Primary Science Viewer</h2>
-                    <p className="tech-label" style={{ color: "var(--text-dim)" }}>
-                      FITS CUTOUT DISPLAY (SLOT A)
-                    </p>
-                  </div>
-                  {imageA?.isDemo && (
-                    <span className="px-2 py-0.5 rounded text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      Demo Fallback
-                    </span>
-                  )}
+          <div className="space-y-4">
+            <div
+              className="p-4 rounded-xl border flex flex-col"
+              style={{ background: "var(--bg-card)", borderColor: "var(--border-subtle)" }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-white">Primary Science Viewer</h2>
+                  <p className="tech-label" style={{ color: "var(--text-dim)" }}>
+                    FITS CUTOUT DISPLAY
+                  </p>
                 </div>
-
-                <SkyViewer
-                  imageData={imageA}
-                  observation={selectedObsA}
-                  label={selectedObsA?.obsId || (imageA ? "Observation A" : undefined)}
-                  catalogStars={catalogStars}
-                  catalogCenter={selectedObsA ? { ra: Number(ra), dec: Number(dec) } : null}
-                  catalogFieldSize={Number(size)}
-                  onSelectStar={setSelectedStar}
-                  className="min-h-[460px]"
-                />
-                {selectedStar && (
-                  <div className="mt-3 rounded-lg border border-amber-300/30 bg-amber-300/5 p-3 text-xs text-slate-200">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-amber-200">Gaia DR3 star · {selectedStar.sourceId}</p>
-                        <p className="mt-1">RA {selectedStar.ra.toFixed(6)}° · Dec {selectedStar.dec.toFixed(6)}° · G magnitude {selectedStar.magnitude?.toFixed(2) ?? "unknown"}</p>
-                        <p className="mt-1 text-slate-400">Parallax {selectedStar.parallax != null && selectedStar.parallax > 0 ? `${selectedStar.parallax.toFixed(3)} mas` : "not available"}. This is a catalog position, not a confirmed SPHEREx detection.</p>
-                      </div>
-                      <button type="button" onClick={() => setSelectedStar(null)} className="text-slate-400 hover:text-white" aria-label="Close star details">Close</button>
-                    </div>
-                  </div>
+                {imageA?.isDemo && (
+                  <span className="px-2 py-0.5 rounded text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Demo Fallback
+                  </span>
                 )}
               </div>
 
-              {/* Provenance and Info Card */}
-              <div
-                className="p-4 rounded-xl border text-xs grid grid-cols-1 sm:grid-cols-3 gap-4"
-                style={{ background: "var(--bg-card)", borderColor: "var(--border-subtle)" }}
-              >
-                <div>
-                  <span className="tech-label block mb-1">ARCHIVE DATA PROVENANCE</span>
-                  <p className="text-white">NASA / IPAC Infrared Science Archive (IRSA)</p>
-                  <p className="text-[var(--text-muted)]">Mission: SPHEREx All-Sky Survey</p>
-                </div>
-                <div>
-                  <span className="tech-label block mb-1">PIXEL CALIBRATION NOTICE</span>
-                  <p className="text-white">Visual Stretch: ASINH (2%–98% percentile)</p>
-                  <p className="text-[var(--text-muted)]">
-                    Raw values mapped to normalized brightness.
-                  </p>
-                </div>
-                <div>
-                  <span className="tech-label block mb-1">INTEGRITY & FOLLOW-UP</span>
-                  <p className="text-white">Requires scientific follow-up</p>
-                  <p className="text-[var(--text-muted)]">
-                    Not natural color. Cutout generated server-side.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div
-                className="p-4 rounded-xl border"
-                style={{ background: "var(--bg-card)", borderColor: "var(--border-subtle)" }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-white">Comparative Sky Time-Machine</h2>
-                    <p className="tech-label" style={{ color: "var(--text-dim)" }}>
-                      DUAL-EPOCH BLINK & DIFFERENCE VISUALIZATION
-                    </p>
-                  </div>
-                  <div className="text-xs text-[var(--text-muted)]">
-                    Slot A vs Slot B
-                  </div>
-                </div>
-
-                <ComparisonViewer
-                  imageA={imageA}
-                  imageB={imageB}
-                  obsA={selectedObsA}
-                  obsB={selectedObsB}
-                  className="min-h-[480px]"
-                />
-              </div>
-
-              {/* Candidate Panel */}
-              <CandidatePanel
-                imageA={imageA}
-                imageB={imageB}
-                obsA={selectedObsA}
-                obsB={selectedObsB}
+              <SkyViewer
+                imageData={imageA}
+                observation={selectedObsA}
+                label={selectedObsA?.obsId || (imageA ? "Observation" : undefined)}
+                catalogStars={catalogStars}
+                catalogCenter={selectedObsA ? { ra: Number(ra), dec: Number(dec) } : null}
+                catalogFieldSize={Number(size)}
+                onSelectStar={setSelectedStar}
+                className="min-h-[460px]"
               />
+              {selectedStar && (
+                <div className="mt-3 rounded-lg border border-amber-300/30 bg-amber-300/5 p-3 text-xs text-slate-200">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-amber-200">Gaia DR3 star · {selectedStar.sourceId}</p>
+                      <p className="mt-1">RA {selectedStar.ra.toFixed(6)}° · Dec {selectedStar.dec.toFixed(6)}° · G magnitude {selectedStar.magnitude?.toFixed(2) ?? "unknown"}</p>
+                      <p className="mt-1 text-slate-400">Parallax {selectedStar.parallax != null && selectedStar.parallax > 0 ? `${selectedStar.parallax.toFixed(3)} mas` : "not available"}. This is a catalog position, not a confirmed SPHEREx detection.</p>
+                    </div>
+                    <button type="button" onClick={() => setSelectedStar(null)} className="text-slate-400 hover:text-white" aria-label="Close star details">Close</button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Provenance and Info Card */}
+            <div
+              className="p-4 rounded-xl border text-xs grid grid-cols-1 sm:grid-cols-3 gap-4"
+              style={{ background: "var(--bg-card)", borderColor: "var(--border-subtle)" }}
+            >
+              <div>
+                <span className="tech-label block mb-1">ARCHIVE DATA PROVENANCE</span>
+                <p className="text-white">NASA / IPAC Infrared Science Archive (IRSA)</p>
+                <p className="text-[var(--text-muted)]">Mission: SPHEREx All-Sky Survey</p>
+              </div>
+              <div>
+                <span className="tech-label block mb-1">PIXEL CALIBRATION NOTICE</span>
+                <p className="text-white">Visual Stretch: ASINH (2%–98% percentile)</p>
+                <p className="text-[var(--text-muted)]">
+                  Raw values mapped to normalized brightness.
+                </p>
+              </div>
+              <div>
+                <span className="tech-label block mb-1">INTEGRITY & FOLLOW-UP</span>
+                <p className="text-white">Requires scientific follow-up</p>
+                <p className="text-[var(--text-muted)]">
+                  Not natural color. Cutout generated server-side.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

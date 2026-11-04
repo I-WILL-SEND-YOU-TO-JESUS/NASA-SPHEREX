@@ -135,39 +135,9 @@ body {
   opacity: 0.86;
 }
 
-.home-satellite {
-  position: fixed;
-  z-index: 30;
-  top: clamp(4.5rem, 12vh, 7rem);
-  right: clamp(0.35rem, 3vw, 2.75rem);
-  width: clamp(5rem, 10vw, 9rem);
-  transform: translate3d(0, var(--satellite-travel, 0px), 0);
-  pointer-events: none;
-  opacity: 0.84;
-  filter: drop-shadow(0 0 12px rgba(108, 202, 255, 0.2));
-  transition: opacity 250ms ease;
-}
-
-.home-satellite svg {
-  display: block;
-  width: 100%;
-  overflow: visible;
-}
-
-.satellite-drift {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: satellite-drift 5s ease-in-out infinite;
-}
-
 @keyframes earthrise-appear {
   from { opacity: 0.35; transform: translate(-50%, calc(-50% + 2rem)) scale(0.98); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
-@keyframes satellite-drift {
-  0%, 100% { transform: rotate(-2deg) translateY(0); }
-  50% { transform: rotate(2deg) translateY(5px); }
 }
 
 @media (max-width: 640px) {
@@ -183,17 +153,10 @@ body {
     width: min(220vw, 60rem);
     height: 10rem;
   }
-
-  .home-satellite {
-    right: 0.15rem;
-    width: 4.5rem;
-    opacity: 0.68;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .earthrise-globe,
-  .satellite-drift {
+  .earthrise-globe {
     animation: none;
   }
 }
