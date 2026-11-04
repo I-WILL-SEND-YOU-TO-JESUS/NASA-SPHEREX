@@ -55,6 +55,7 @@ function ExploreContent() {
   const objectOptions = shortNameQuery
     ? FEATURED_TARGETS.slice(0, 3).map((target) => ({ name: target.name }))
     : nameSuggestions.objects;
+  const irsaViewerUrl = `https://irsa.ipac.caltech.edu/applications/spherex/?api=spectral-images&ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&sr=${encodeURIComponent(`${Math.max(1, Number(size) * 30 || 30)}m`)}&spatialRegionOperation=intersects`;
 
   useEffect(() => {
     const closeWhenClickingOutside = (event: PointerEvent) => {
@@ -327,7 +328,7 @@ function ExploreContent() {
               OBSERVATION WORKSPACE
             </span>
             <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[var(--border-subtle)] text-[var(--text-muted)]">
-              IRSA SIA v2 Connected
+              {searchError.includes("(503)") ? "IRSA temporarily unavailable" : "IRSA SIA v2"}
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white mt-1">
@@ -546,6 +547,16 @@ function ExploreContent() {
               >
                 <p className="font-semibold">{searchError.startsWith("No matching SPHEREx images") ? "No observations found at this position" : "Could not complete the archive search"}</p>
                 <p className="leading-relaxed">{searchError}</p>
+                {(searchError.includes("(503)") || searchError.startsWith("Could not reach IRSA")) && (
+                  <a
+                    href={irsaViewerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block underline text-white font-medium hover:text-[var(--accent)]"
+                  >
+                    Open the official SPHEREx viewer ↗
+                  </a>
+                )}
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     onClick={() => handleSearch(ra, dec, size)}
